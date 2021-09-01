@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>DoomLauncher</title>
+	<script src="eel.js"></script>
+	<script>
+		eel.expose(print_iwads)
+		function print_iwads(x) {
+			for (let elem of x) {
+				let p = document.createElement('option');
+				p.innerHTML = elem;
+				p.setAttribute("id", elem);
+				p.setAttribute("value", elem);
+				document.getElementById('iwads').appendChild(p);
+			};
+		};
+
+		eel.expose(print_mods)
+		function print_mods(x) {
+			for (let elem of x) {
+				let p = document.createElement("div");
+				p.setAttribute("class", "list_item");
+				p.setAttribute("draggable", true);
+				p.setAttribute("id", elem);
+				document.getElementById('your_mods').appendChild(p);
+				let o = document.createElement("div");
+				o.setAttribute("class", "mod_name");
+				o.innerHTML = elem;
+				document.getElementById(elem).appendChild(o);
+			};
+			dragndrop()
+
+		};
+
+		function brightmaps() {
+			if ( document.getElementById("brightmaps").checked ) {
+				eel.brightmaps(true)
+			} else {
+				eel.brightmaps(false)
+			}
+		};
+
+		function lights() {
+			if ( document.getElementById("lights").checked ) {
+				eel.lights(true)
+			} else {
+				eel.lights(false)
+			}
+		};
+
+		function engine_changed(x) {
+			eel.engine_change(x)
+		};
+
+		function iwad_changed(x) {
+			eel.iwad_changed(x)
+		};
+
+		function open_explorer() {
+			eel.open_explorer();
+			alert('The explorer has opened in a new window')
+		};
+	</script>
+	<link rel="stylesheet" type="text/css" href="style/style.css">
+	<link rel="shortcut icon" href="/images/icon.ico" type="image/x-icon">
+</head>
+<body>
+	<h1>DoomLauncher</h1>
+	<div class="options">
+		<div class="options-left">
+			<select id="iwads" onchange="iwad_changed(this.options[this.selectedIndex].text)" class="iwad_list"></select>
+			<select id="engine" class="engine_list" onchange="engine_changed(this.options[this.selectedIndex].text)">
+				<option>GZDoom</option>
+				<option>LZDoom</option>
+			</select>
+			<button class="option-button" onclick="open_explorer()">explorer</button>
+
+			<div class="option-button radio_input">
+				<input type="checkbox" name="brightmaps" class="dot" id="brightmaps" onchange="brightmaps()">
+				<h5>brightmaps</h5>
+			</div>
+			<div class="option-button radio_input">
+				<input type="checkbox" name="lights" class="dot" id="lights" onchange="lights()">
+				<h5>lights</h5>
+			</div>
+		</div>
+		<div class="lists">
+			<div class="list" id="your_mods">
+				<h3>Your Mods</h3>
+			</div>
+			<div class="list" id="active" onblur="mods_changed()">
+				<h3>Active Mods</h3>
+			</div>
+		</div>
+	</div>
+	<button class="launch" onclick="rip_and_tear()">RIP and TEAR</button>
+	<div class="version">version: 1.0 FINAL</div>
+	<script>
+
+		function dragndrop() {
+			list_items = document.querySelectorAll('.list_item');
+			lists = document.querySelectorAll('.list');
+
+			let draggedItem = null;
+
+			for (let i = 0; i < list_items.length; i++) {
+				const item = list_items[i];
+
+				item.addEventListener('dragstart', function () {
+					draggedItem = item;
+					setTimeout(function() {
+						item.style.display = 'none';
+					}, 0);
+				});
+
+				item.addEventListener('dragend', function () {
+					setTimeout(function () {
+						draggedItem.style.display = 'block';
+						draggedItem = null;
+					}, 0);
+				});
+
+				for (let j = 0; j < lists.length; j++) {
+					const list = lists[j];
+
+					list.addEventListener('dragover', function (e) {
+					e.preventDefault();
+					});
+					list.addEventListener('dragenter', function (e) {
+						e.preventDefault();
+						this.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+					});
+					list.addEventListener('dragleave', function (e) {
+						this.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+					});
+					list.addEventListener('drop', function (e) {
+						this.append(draggedItem);
+						this.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+					});
+				}
+			}
+		}
+
+
+		function rip_and_tear() {
+			var mods_active = []
+			for (let elem of document.getElementById('active').children) {
+				mods_active.push(elem.id);
+			};
+			eel.rip_and_tear(mods_active);
+		};
+
+
+		let all_lists = document.getElementsByClassName('list')
+
+		for (let i = 0; i < all_lists.length; i++) {
+			let one_list = all_lists[i]
+
+			one_list.addEventListener("DOMSubtreeModified", function() {
+				if (this.children.length > 8) {
+					this.style.overflowY = 'scroll';
+				} else {
+					this.style.overflowY = 'hidden';
+				};
+			});
+		};
+	</script>
+</body>
+</html>
